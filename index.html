@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haven 💙</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #dbeafe, #f0fdfa);
+    padding: 20px;
+}
+
+.container {
+    max-width: 520px;
+    margin: auto;
+    background: white;
+    padding: 15px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+h1 { text-align: center; color: #2563eb; }
+
+#chatbox {
+    height: 340px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.message { margin: 8px 0; }
+.user { color: #1d4ed8; }
+.bot { color: #047857; }
+
+.moods {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.moods button {
+    flex: 1;
+    margin: 2px;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    background-color: #e0f2fe;
+}
+
+.controls { display: flex; gap: 6px; }
+
+input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.send { background-color: #2563eb; color: white; }
+.reset { width: 100%; margin-top: 8px; background-color: #e5e7eb; }
+
+#disclaimer {
+    font-size: 0.75em;
+    color: gray;
+    margin-top: 8px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>Haven 💙</h1>
+
+<div class="moods">
+    <button onclick="setMood('sad')">😔 Sad</button>
+    <button onclick="setMood('stressed')">😣 Stressed</button>
+    <button onclick="setMood('angry')">😡 Angry</button>
+    <button onclick="setMood('okay')">🙂 Okay</button>
+</div>
+
+<div id="chatbox"></div>
+
+<div class="controls">
+    <input id="userInput" placeholder="Type how you feel..." />
+    <button class="send" onclick="sendMessage()">Send</button>
+</div>
+
+<button class="reset" onclick="resetChat()">🌱 Start Over</button>
+
+<div id="disclaimer">
+Haven does not store or save any messages.  
+This chat exists only in your browser.  
+Haven is not a therapist or medical service.
+</div>
+</div>
+
+<script>
+const chatbox = document.getElementById("chatbox");
+const userInput = document.getElementById("userInput");
+
+let userName = "";
+let stage = "name";
+
+function botMessage(text) {
+    const div = document.createElement("div");
+    div.className = "message bot";
+    chatbox.appendChild(div);
+
+    let i = 0;
+    const typing = setInterval(() => {
+        div.textContent += text[i++];
+        chatbox.scrollTop = chatbox.scrollHeight;
+        if (i >= text.length) clearInterval(typing);
+    }, 20);
+}
+
+function userMessage(text) {
+    const div = document.createElement("div");
+    div.className = "message user";
+    div.textContent = text;
+    chatbox.appendChild(div);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function welcome() {
+    chatbox.innerHTML = "";
+    botMessage(
+        "Hi, I’m Haven 💙\n\n" +
+        "I’m really glad you’re here. Before we start, I want you to know that nothing you share is stored anywhere — this chat stays only on your device.\n\n" +
+        "What would you like me to call you?"
+    );
+}
+
+function resetChat() {
+    userName = "";
+    stage = "name";
+    welcome();
+}
+
+function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+    userMessage(text);
+    userInput.value = "";
+    handle(text);
+}
+
+function setMood(mood) {
+    if (stage === "name") {
+        botMessage("Before we talk about how you’re feeling, may I know your name?");
+        return;
+    }
+    userMessage("I feel " + mood);
+    handle(mood);
+}
+
+function extractName(text) {
+    return text
+        .toLowerCase()
+        .replace("my name is", "")
+        .replace("i am", "")
+        .replace("i'm", "")
+        .trim()
+        .split(" ")[0];
+}
+
+function handle(text) {
+    const lower = text.toLowerCase();
+
+    if (stage === "name") {
+        userName = extractName(text);
+        stage = "chat";
+        botMessage(
+            `Hi ${userName} 💙\n\n` +
+            "Thank you for telling me. I’m really glad you’re here.\n" +
+            "How have things been feeling for you lately?"
+        );
+        return;
+    }
+
+    const crisis = ["suicide","kill myself","hurt myself","self-harm","want to die"];
+    if (crisis.some(w => lower.includes(w))) {
+        botMessage(
+            `${userName}, I’m really sorry you’re feeling this much pain.\n\n` +
+            "I’m not able to help with emergencies, but you truly deserve support.\n" +
+            "Please consider talking to a trusted adult, teacher, parent, or a local helpline right now.\n\n" +
+            "You don’t have to go through this alone."
+        );
+        return;
+    }
+
+    if (lower.includes("exam") || lower.includes("test") || lower.includes("homework") || lower.includes("grades")) {
+        botMessage(
+            `School pressure can be really heavy, ${userName}.\n\n` +
+            "It makes sense that this feels overwhelming.\n" +
+            "What part of school is stressing you the most right now?"
+        );
+        return;
+    }
+
+    if (lower.includes("bully") || lower.includes("ignored") || lower.includes("friends") || lower.includes("lonely")) {
+        botMessage(
+            "I’m really sorry you’re going through that.\n\n" +
+            "Feeling ignored or bullied can hurt deeply, and it’s not your fault.\n" +
+            "Would you like to tell me a little more about what’s been happening?"
+        );
+        return;
+    }
+
+    if (lower.includes("parents") || lower.includes("family") || lower.includes("home")) {
+        botMessage(
+            "Family situations can be really complicated and emotional.\n\n" +
+            "I’m here with you — what’s been going on at home?"
+        );
+        return;
+    }
+
+    if (lower.includes("sick") || lower.includes("tired") || lower.includes("burnt out")) {
+        botMessage(
+            "That sounds really exhausting.\n\n" +
+            "I can’t give medical advice, but it might help to rest and talk to a trusted adult about how you’re feeling.\n" +
+            "You deserve care and understanding."
+        );
+        return;
+    }
+
+    if (lower.includes("stressed") || lower.includes("overwhelmed")) {
+        botMessage(
+            "It sounds like you’ve been carrying a lot.\n\n" +
+            "Anyone in your situation would feel stressed.\n" +
+            "Would you like to try a short breathing exercise together, or would you rather talk more?"
+        );
+        return;
+    }
+
+    if (lower.includes("sad")) {
+        botMessage(
+            "I’m really sorry you’re feeling this way.\n\n" +
+            "Your feelings matter, and I’m glad you shared them with me.\n" +
+            "What do you think has been weighing on you the most?"
+        );
+        return;
+    }
+
+    if (lower.includes("angry")) {
+        botMessage(
+            "Anger can sometimes hide hurt or frustration underneath.\n\n" +
+            "It’s okay to feel this way.\n" +
+            "Do you want to talk about what made you feel angry?"
+        );
+        return;
+    }
+
+    // Gentle fallback
+    botMessage(
+        "I’m really sorry you’re dealing with this.\n\n" +
+        "I may not fully understand everything you’re going through, but I truly hope your situation becomes easier with time.\n\n" +
+        "If you ever feel like you need more guidance or support, please consider talking to a trusted adult.\n" +
+        "Just know that I’m here to listen whenever you want to share."
+    );
+}
+
+welcome();
+</script>
+</body>
+</html>
